@@ -8,13 +8,19 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -105,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements  AdapterView.OnIt
 
     //function to perform the actual calibration. Creates a background service that takes care of the calibration.
     //Unregisters the receiver to prevent unnecessary UI updating
+    //Calls doCalibrate function
     public void startCalibration(View view){
 
         if (calibIteration >0){
@@ -139,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements  AdapterView.OnIt
         registerReceiver(customReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         wifiManager.startScan();
     }
-
+    //Runs iteration MAXCALIB number of times. To change the number of iterations, change the value of MAXCALIB
     public void doCalibrate(ScanResult accessPoint){
 
         ((TextView) findViewById(R.id.status_text)).setText("Calibration: "+calibIteration+1);
@@ -163,6 +170,7 @@ public class MainActivity extends AppCompatActivity implements  AdapterView.OnIt
             wifiManager.startScan();
     }
 
+    //This function calculates the value of
     public void endCalibration(View view){
 
         valueOfN/=(MAXCALIB*noCalib);
@@ -180,6 +188,29 @@ public class MainActivity extends AppCompatActivity implements  AdapterView.OnIt
     }
 
     public void calculateDistance(View view){
+
+        ConstraintLayout constraintLayout = (ConstraintLayout) findViewById(R.id.main_activity_layout);
+
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.popup_layout,null);
+
+        // create the popup window
+        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        boolean focusable = true; // lets taps outside the popup also dismiss it
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+
+        // show the popup window
+        popupWindow.showAtLocation(constraintLayout, Gravity.CENTER, 0, 0);
+
+        // dismiss the popup window when touched
+        popupView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                popupWindow.dismiss();
+                return true;
+            }
+        });
 
         distanceToSelectedHotspot = 0;
         try {
